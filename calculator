@@ -1,484 +1,216 @@
-
 import tkinter as tk
 from tkinter import messagebox, scrolledtext, filedialog
 import math
 
+
 class PolishedScientificCalculator:
-    def __init__(self, root):
+    def __init__(self, root: tk.Tk):
         self.root = root
-        self.root.title("Polished Scientific Calculator")
+        self.root.title("📐 Polished Scientific Calculator")
         self.root.geometry("550x650")
         self.root.resizable(False, False)
+
+        # State variables
         self.expression = ""
         self.memory = 0
-=======
-
-import tkinter as tk
-from tkinter import messagebox, scrolledtext
-import math
-
-class ScientificCalculator:
-    def __init__(self, root):
-        self.root = root
-        self.root.title("Scientific Calculator")
-        self.root.geometry("500x600")
-        self.root.resizable(False, False)
-        self.expression = ""
-        self.memory = 0
-
-
-import tkinter as tk
-from tkinter import messagebox
-import math
-
-class Calculator:
-    def __init__(self, root):
-        self.root = root
-        self.root.title("Enhanced Python Calculator")
-        self.root.geometry("400x500")
-        self.root.resizable(False, False)
-        self.expression = ""
-
-
         self.history = []
 
-        # Display
-        self.entry = tk.Entry(root, font=("Arial", 24), borderwidth=2, relief="ridge")
+        # Display field
+        self.entry = tk.Entry(root, font=("Arial", 24), borderwidth=2, relief="ridge", justify="right")
         self.entry.pack(fill="both", ipadx=8, pady=10, padx=10)
-
 
         # History panel
         self.history_panel = scrolledtext.ScrolledText(root, height=8, state='disabled', font=("Arial", 12))
         self.history_panel.pack(fill='both', padx=10, pady=5)
 
-
-        # Buttons frame
-        btns_frame = tk.Frame(root)
-        btns_frame.pack()
-
-
-            ['7','8','9','/','√','!'],
-            ['4','5','6','*','^','%'],
-            ['1','2','3','-','sin','cos'],
-            ['0','.','=','+','tan','log'],
-
-            ['AC','C','M+','M-','MR','ln','Export']
+        # Button layout
+        self.buttons = [
+            ['7', '8', '9', '/', '√', '!'],
+            ['4', '5', '6', '*', '^', '%'],
+            ['1', '2', '3', '-', 'sin', 'cos'],
+            ['0', '.', '=', '+', 'tan', 'log'],
+            ['AC', 'C', 'M+', 'M-', 'MR', 'ln', 'Export']
         ]
 
+        # Button color categories
         self.button_colors = {
-            "numbers":"#d3d3d3",
-            "operators":"#ffb347",
-            "scientific":"#add8e6",
-            "memory":"#90ee90",
-            "others":"#f0f0f0"
+            "numbers": "#d3d3d3",
+            "operators": "#ffb347",
+            "scientific": "#add8e6",
+            "memory": "#90ee90",
+            "others": "#f0f0f0"
         }
 
-        for r, row in enumerate(self.buttons):
-            row_frame = tk.Frame(btns_frame)
-            row_frame.pack(expand=True, fill="both")
-            for c, btn_text in enumerate(row):
-                color = self.get_color(btn_text)
-                btn = tk.Button(row_frame, text=btn_text, font=("Arial", 16), width=6, height=2,
-                                bg=color, activebackground="yellow",
-                                command=lambda x=btn_text: self.on_click(x))
-                btn.grid(row=r, column=c, sticky="nsew", padx=2, pady=2)
-
-        # Grid weight
-        for i in range(7):
-            btns_frame.rowconfigure(i, weight=1)
-            btns_frame.columnconfigure(i, weight=1)
+        # Create button grid
+        self.create_buttons()
 
         # Keyboard support
         self.root.bind("<Key>", self.on_keypress)
 
-    def get_color(self, text):
-        if text in "0123456789.":
+    # ---------------- UI ---------------- #
+    def create_buttons(self):
+        """Generate calculator buttons dynamically."""
+        btns_frame = tk.Frame(self.root)
+        btns_frame.pack(expand=True, fill="both")
+
+        for r, row in enumerate(self.buttons):
+            row_frame = tk.Frame(btns_frame)
+            row_frame.pack(expand=True, fill="both")
+
+            for c, btn_text in enumerate(row):
+                color = self.get_color(btn_text)
+                btn = tk.Button(
+                    row_frame, text=btn_text, font=("Arial", 16), width=6, height=2,
+                    bg=color, activebackground="yellow",
+                    command=lambda x=btn_text: self.on_click(x)
+                )
+                btn.grid(row=r, column=c, sticky="nsew", padx=2, pady=2)
+
+        # Responsive grid
+        for i in range(7):
+            btns_frame.rowconfigure(i, weight=1)
+            btns_frame.columnconfigure(i, weight=1)
+
+    def get_color(self, text: str) -> str:
+        """Assign colors based on button type."""
+        if text.isdigit() or text == '.':
             return self.button_colors["numbers"]
         elif text in "+-*/^%//":
             return self.button_colors["operators"]
-        elif text in ['√','!','sin','cos','tan','log','ln']:
+        elif text in ['√', '!', 'sin', 'cos', 'tan', 'log', 'ln']:
             return self.button_colors["scientific"]
-        elif text in ['M+','M-','MR']:
+        elif text in ['M+', 'M-', 'MR']:
             return self.button_colors["memory"]
         else:
             return self.button_colors["others"]
 
-    def on_click(self, char):
-        self.flash_button(char)
+    # ---------------- Button Actions ---------------- #
+    def on_click(self, char: str):
+        """Handle button clicks."""
         if char == 'C':
-            self.expression = ""
-            self.entry.delete(0, tk.END)
-=======
-            ['AC','C','M+','M-','MR','ln']
-=======
-            ['7','8','9','/','√'],
-            ['4','5','6','*','!'],
-            ['1','2','3','-','^'],
-            ['0','.','%','+','//'],
-            ['C','History','=','Exit']
-
-        ]
-
-        for r, row in enumerate(buttons):
-            row_frame = tk.Frame(btns_frame)
-            row_frame.pack(expand=True, fill="both")
-            for c, btn_text in enumerate(row):
-
-                btn = tk.Button(row_frame, text=btn_text, font=("Arial", 16), width=6, height=2,
-=======
-                btn = tk.Button(row_frame, text=btn_text, font=("Arial", 18), width=6, height=2,
-
-                                command=lambda x=btn_text: self.on_click(x))
-                btn.grid(row=r, column=c, sticky="nsew", padx=2, pady=2)
-
-        # Adjust grid weight
-
-        for i in range(6):
-=======
-        for i in range(5):
-
-            btns_frame.rowconfigure(i, weight=1)
-            btns_frame.columnconfigure(i, weight=1)
-
-    def on_click(self, char):
-        if char == 'C':
-            self.expression = ""
-            self.entry.delete(0, tk.END)
-
-
+            self.clear_entry()
         elif char == 'AC':
-            self.expression = ""
-            self.entry.delete(0, tk.END)
-            self.history = []
-            self.update_history_panel()
+            self.clear_all()
         elif char == '=':
             self.calculate()
         elif char == 'M+':
-
-            try: self.memory += float(self.entry.get())
-            except: pass
+            self.memory_add()
         elif char == 'M-':
-            try: self.memory -= float(self.entry.get())
-            except: pass
+            self.memory_subtract()
         elif char == 'MR':
-            self.expression += str(self.memory)
-            self.entry.insert(tk.END, str(self.memory))
+            self.memory_recall()
         elif char == 'Export':
             self.export_history()
         else:
-            self.expression += char
-            self.entry.insert(tk.END, char)
-
-    def flash_button(self, char):
-        # Optional: implement visual flash effect if desired
-        pass
+            self.append_to_expression(char)
 
     def on_keypress(self, event):
+        """Support keyboard input."""
         key = event.char
         if key in '0123456789.+-*/%^':
-            self.expression += key
-            self.entry.insert(tk.END, key)
-        elif key == '\r':
+            self.append_to_expression(key)
+        elif key == '\r':  # Enter
             self.calculate()
-        elif key == '\x08':
+        elif key == '\x08':  # Backspace
             self.expression = self.expression[:-1]
-            self.entry.delete(0, tk.END)
-            self.entry.insert(0, self.expression)
+            self.update_entry(self.expression)
 
+    # ---------------- Expression Handling ---------------- #
+    def append_to_expression(self, value: str):
+        """Append characters to expression."""
+        self.expression += value
+        self.entry.insert(tk.END, value)
+
+    def clear_entry(self):
+        """Clear only the current entry."""
+        self.expression = ""
+        self.entry.delete(0, tk.END)
+
+    def clear_all(self):
+        """Clear entry and history."""
+        self.clear_entry()
+        self.history = []
+        self.update_history_panel()
+
+    # ---------------- Memory Functions ---------------- #
+    def memory_add(self):
+        try:
+            self.memory += float(self.entry.get())
+        except ValueError:
+            pass
+
+    def memory_subtract(self):
+        try:
+            self.memory -= float(self.entry.get())
+        except ValueError:
+            pass
+
+    def memory_recall(self):
+        self.append_to_expression(str(self.memory))
+
+    # ---------------- Calculation ---------------- #
     def calculate(self):
         try:
-            expr = self.expression.replace('^','**').replace('//','//')
-            expr = expr.replace('√','math.sqrt(')+')'*(self.expression.count('√'))
-            expr = self.replace_factorial(expr)
-            expr = expr.replace('sin','math.sin(math.radians')
-            expr = expr.replace('cos','math.cos(math.radians')
-            expr = expr.replace('tan','math.tan(math.radians')
-            expr = expr.replace('log','math.log10')
-            expr = expr.replace('ln','math.log')
-
-            result = eval(expr)
-            self.entry.delete(0, tk.END)
-            self.entry.insert(tk.END, str(result))
+            expr = self.transform_expression(self.expression)
+            result = eval(expr, {"math": math})
+            self.update_entry(str(result))
             self.history.append(f"{self.expression} = {result}")
             self.update_history_panel()
             self.expression = str(result)
         except Exception as e:
             messagebox.showerror("Error", f"Invalid Expression!\n{e}")
-            self.entry.delete(0, tk.END)
-            self.expression = ""
+            self.clear_entry()
 
-    def replace_factorial(self, expr):
-        while '!' in expr:
-            idx = expr.index('!')
-            start = idx-1
-            while start >=0 and (expr[start].isdigit() or expr[start]=='.'):
-                start -=1
-            number = expr[start+1:idx]
-            expr = expr[:start+1] + f"math.factorial(int({number}))" + expr[idx+1:]
+    def transform_expression(self, expr: str) -> str:
+        """Replace symbols with valid Python math expressions."""
+        expr = expr.replace('^', '**')
+        expr = expr.replace('√', 'math.sqrt(') + ')' * expr.count('√')
+        expr = self.replace_factorial(expr)
+        expr = expr.replace('sin', 'math.sin(math.radians')
+        expr = expr.replace('cos', 'math.cos(math.radians')
+        expr = expr.replace('tan', 'math.tan(math.radians')
+        expr = expr.replace('log', 'math.log10')
+        expr = expr.replace('ln', 'math.log')
         return expr
 
+    def replace_factorial(self, expr: str) -> str:
+        """Convert 'n!' into math.factorial(n)."""
+        while '!' in expr:
+            idx = expr.index('!')
+            start = idx - 1
+            while start >= 0 and (expr[start].isdigit() or expr[start] == '.'):
+                start -= 1
+            number = expr[start + 1:idx]
+            expr = expr[:start + 1] + f"math.factorial(int({number}))" + expr[idx + 1:]
+        return expr
+
+    # ---------------- History ---------------- #
     def update_history_panel(self):
+        """Update history display."""
         self.history_panel.config(state='normal')
         self.history_panel.delete(1.0, tk.END)
         self.history_panel.insert(tk.END, "\n".join(self.history[-20:]))
         self.history_panel.config(state='disabled')
 
     def export_history(self):
+        """Export calculation history to file."""
         if not self.history:
-            messagebox.showinfo("Export History","No history to export.")
+            messagebox.showinfo("Export History", "No history to export.")
             return
-        file = filedialog.asksaveasfilename(defaultextension=".txt", filetypes=[("Text files","*.txt")])
+        file = filedialog.asksaveasfilename(defaultextension=".txt", filetypes=[("Text files", "*.txt")])
         if file:
             with open(file, "w") as f:
                 f.write("\n".join(self.history))
             messagebox.showinfo("Export History", f"History exported to {file}")
 
-=======
-            try:
-                self.memory += float(self.entry.get())
-            except:
-                pass
-        elif char == 'M-':
-            try:
-                self.memory -= float(self.entry.get())
-            except:
-                pass
-        elif char == 'MR':
-            self.expression += str(self.memory)
-            self.entry.insert(tk.END, str(self.memory))
-        elif char in ['√','!','sin','cos','tan','log','ln']:
-=======
-        elif char == '=':
-            self.calculate()
-        elif char == 'History':
-            self.show_history()
-        elif char == 'Exit':
-            self.root.quit()
-        elif char in ['√','!']:
-
-            self.expression += char
-            self.entry.insert(tk.END, char)
-        else:
-            self.expression += str(char)
-            self.entry.insert(tk.END, str(char))
-
-    def calculate(self):
-
-        try:
-            expr = self.expression.replace('^','**').replace('//','//')
-            # Replace scientific functions
-            expr = expr.replace('√','math.sqrt(')+')'*(self.expression.count('√'))
-            expr = self.replace_factorial(expr)
-            expr = expr.replace('sin','math.sin(math.radians')
-            expr = expr.replace('cos','math.cos(math.radians')
-            expr = expr.replace('tan','math.tan(math.radians')
-            expr = expr.replace('log','math.log10')
-            expr = expr.replace('ln','math.log')
-
-            # Close parentheses for trig
-            expr = expr.replace('math.sin(math.radians','math.sin(math.radians(')
-            expr = expr.replace('math.cos(math.radians','math.cos(math.radians(')
-            expr = expr.replace('math.tan(math.radians','math.tan(math.radians(')
-
-            result = eval(expr)
-            self.entry.delete(0, tk.END)
-            self.entry.insert(tk.END, str(result))
-            self.history.append(f"{self.expression} = {result}")
-            self.update_history_panel()
-            self.expression = str(result)
-        except Exception as e:
-            messagebox.showerror("Error", f"Invalid Expression!\n{e}")
-            self.entry.delete(0, tk.END)
-            self.expression = ""
-
-    def replace_factorial(self, expr):
-        # Replace every number! with math.factorial(number)
-        while '!' in expr:
-            idx = expr.index('!')
-            start = idx-1
-            while start >=0 and (expr[start].isdigit() or expr[start]=='.'):
-                start -=1
-            number = expr[start+1:idx]
-            expr = expr[:start+1] + f"math.factorial(int({number}))" + expr[idx+1:]
-        return expr
-
-    def update_history_panel(self):
-        self.history_panel.config(state='normal')
-        self.history_panel.delete(1.0, tk.END)
-        self.history_panel.insert(tk.END, "\n".join(self.history[-10:]))  # show last 10
-        self.history_panel.config(state='disabled')
-=======
-        try:
-            expr = self.expression.replace('^','**').replace('//','//')
-            result = None
-            if '√' in expr:
-                expr = expr.replace('√','math.sqrt(')+')'*(expr.count('√'))
-            if '!' in expr:
-                expr = self.replace_factorial(expr)
-            result = eval(expr)
-            self.entry.delete(0, tk.END)
-            self.entry.insert(tk.END, str(result))
-            self.history.append(f"{self.expression} = {result}")
-            self.expression = str(result)
-        except Exception as e:
-            messagebox.showerror("Error", f"Invalid Expression!\n{e}")
-            self.entry.delete(0, tk.END)
-            self.expression = ""
-
-    def replace_factorial(self, expr):
-        # Replace every number! with math.factorial(number)
-        while '!' in expr:
-            idx = expr.index('!')
-            # find the start of the number
-            start = idx-1
-            while start >=0 and (expr[start].isdigit() or expr[start]=='.'):
-                start -=1
-            number = expr[start+1:idx]
-            expr = expr[:start+1] + f"math.factorial(int({number}))" + expr[idx+1:]
-        return expr
-
-    def show_history(self):
-        if not self.history:
-            messagebox.showinfo("History", "No calculations yet.")
-        else:
-            messagebox.showinfo("History", "\n".join(self.history))
+    # ---------------- Helpers ---------------- #
+    def update_entry(self, value: str):
+        """Update entry field."""
+        self.entry.delete(0, tk.END)
+        self.entry.insert(0, value)
 
 
 if __name__ == "__main__":
     root = tk.Tk()
-    calc = Calculator(root)
-    root.mainloop()
-
-
-=======
-import math
-
-history = []
-
-def add(a, b): return a + b
-def subtract(a, b): return a - b
-def multiply(a, b): return a * b
-def divide(a, b):
-    if b == 0:
-        print("Error: Division by zero!")
-        return None
-    return a / b
-def exponent(a, b): return a ** b
-def modulus(a, b):
-    if b == 0:
-        print("Error: Modulus by zero!")
-        return None
-    return a % b
-def floor_division(a, b):
-    if b == 0:
-        print("Error: Division by zero!")
-        return None
-    return a // b
-def square_root(a):
-    if a < 0:
-        print("Error: Cannot take square root of negative number!")
-        return None
-    return math.sqrt(a)
-def factorial(a):
-    if a < 0 or not float(a).is_integer():
-        print("Error: Factorial requires a non-negative integer!")
-        return None
-    return math.factorial(int(a))
-
-def show_history():
-    if not history:
-        print("No calculations yet.")
-    else:
-        print("\nCalculation History:")
-        for item in history:
-            print(item)
-
-def calculator():
-    print("Welcome to the Enhanced Python Calculator!\n")
-    while True:
-        print("\nSelect operation:")
-        print("1. Addition (+)")
-        print("2. Subtraction (-)")
-        print("3. Multiplication (*)")
-        print("4. Division (/)")
-        print("5. Exponentiation (^)")
-        print("6. Modulus (%)")
-        print("7. Floor Division (//)")
-        print("8. Square Root (√)")
-        print("9. Factorial (!)")
-        print("10. Show History")
-        
-        choice = input("Enter your choice (1-10): ")
-
-        if choice == '10':
-            show_history()
-            continue
-        
-        try:
-            if choice in ['1','2','3','4','5','6','7']:
-                num1 = float(input("Enter first number: "))
-                num2 = float(input("Enter second number: "))
-            elif choice in ['8','9']:
-                num1 = float(input("Enter number: "))
-        except ValueError:
-            print("Invalid input. Please enter numeric values.")
-            continue
-
-        result = None
-        if choice == '1':
-            result = add(num1, num2)
-            symbol = '+'
-        elif choice == '2':
-            result = subtract(num1, num2)
-            symbol = '-'
-        elif choice == '3':
-            result = multiply(num1, num2)
-            symbol = '*'
-        elif choice == '4':
-            result = divide(num1, num2)
-            symbol = '/'
-        elif choice == '5':
-            result = exponent(num1, num2)
-            symbol = '^'
-        elif choice == '6':
-            result = modulus(num1, num2)
-            symbol = '%'
-        elif choice == '7':
-            result = floor_division(num1, num2)
-            symbol = '//'
-        elif choice == '8':
-            result = square_root(num1)
-            symbol = '√'
-        elif choice == '9':
-            result = factorial(num1)
-            symbol = '!'
-        else:
-            print("Invalid choice. Please select 1-10.")
-            continue
-
-        if result is not None:
-            if choice in ['8','9']:
-                print(f"Result: {symbol}{num1} = {result}")
-                history.append(f"{symbol}{num1} = {result}")
-            else:
-                print(f"Result: {num1} {symbol} {num2} = {result}")
-                history.append(f"{num1} {symbol} {num2} = {result}")
-
-        again = input("\nDo you want to perform another calculation? (y/n): ")
-        if again.lower() != 'y':
-            print("Thank you for using the calculator!")
-            break
-
-
-
-if __name__ == "__main__":
-    root = tk.Tk()
-
     polished_calc = PolishedScientificCalculator(root)
     root.mainloop()
-=======
-    sci_calc = ScientificCalculator(root)
-    root.mainloop()
-
-
-
