@@ -1,30 +1,35 @@
 import tkinter as tk
-from tkinter import messagebox, scrolledtext, filedialog
+from tkinter import messagebox, scrolledtext, filedialog, ttk
 import math
 
-
 class PolishedScientificCalculator:
-    def __init__(self, root: tk.Tk):
+    def __init__(self, root):
         self.root = root
-        self.root.title("📐 Polished Scientific Calculator")
-        self.root.geometry("550x650")
+        self.root.title("✨ Polished Scientific Calculator")
+        self.root.geometry("560x680")
         self.root.resizable(False, False)
 
-        # State variables
         self.expression = ""
         self.memory = 0
         self.history = []
 
-        # Display field
-        self.entry = tk.Entry(root, font=("Arial", 24), borderwidth=2, relief="ridge", justify="right")
-        self.entry.pack(fill="both", ipadx=8, pady=10, padx=10)
+        self.create_widgets()
+        self.bind_keys()
 
-        # History panel
-        self.history_panel = scrolledtext.ScrolledText(root, height=8, state='disabled', font=("Arial", 12))
+    def create_widgets(self):
+        # Entry Display
+        self.entry = tk.Entry(self.root, font=("Consolas", 24), borderwidth=3, relief="sunken", justify='right')
+        self.entry.pack(fill="x", ipadx=8, pady=10, padx=10)
+
+        # History
+        self.history_panel = scrolledtext.ScrolledText(self.root, height=8, state='disabled', font=("Consolas", 12))
         self.history_panel.pack(fill='both', padx=10, pady=5)
 
-        # Button layout
-        self.buttons = [
+        # Button Frame
+        btns_frame = tk.Frame(self.root)
+        btns_frame.pack(pady=5)
+
+        buttons = [
             ['7', '8', '9', '/', '√', '!'],
             ['4', '5', '6', '*', '^', '%'],
             ['1', '2', '3', '-', 'sin', 'cos'],
@@ -32,149 +37,111 @@ class PolishedScientificCalculator:
             ['AC', 'C', 'M+', 'M-', 'MR', 'ln', 'Export']
         ]
 
-        # Button color categories
-        self.button_colors = {
-            "numbers": "#d3d3d3",
-            "operators": "#ffb347",
-            "scientific": "#add8e6",
-            "memory": "#90ee90",
-            "others": "#f0f0f0"
+        color_map = {
+            "numbers": "#f8f9fa",
+            "operators": "#ffb84d",
+            "scientific": "#aee2ff",
+            "memory": "#a8ffb0",
+            "others": "#e0e0e0"
         }
 
-        # Create button grid
-        self.create_buttons()
-
-        # Keyboard support
-        self.root.bind("<Key>", self.on_keypress)
-
-    # ---------------- UI ---------------- #
-    def create_buttons(self):
-        """Generate calculator buttons dynamically."""
-        btns_frame = tk.Frame(self.root)
-        btns_frame.pack(expand=True, fill="both")
-
-        for r, row in enumerate(self.buttons):
+        for row in buttons:
             row_frame = tk.Frame(btns_frame)
-            row_frame.pack(expand=True, fill="both")
-
-            for c, btn_text in enumerate(row):
-                color = self.get_color(btn_text)
+            row_frame.pack(fill="both")
+            for btn_text in row:
+                color = self.get_button_color(btn_text, color_map)
                 btn = tk.Button(
-                    row_frame, text=btn_text, font=("Arial", 16), width=6, height=2,
-                    bg=color, activebackground="yellow",
+                    row_frame, text=btn_text, font=("Arial", 16, "bold"),
+                    bg=color, width=7, height=2, activebackground="#fce303",
                     command=lambda x=btn_text: self.on_click(x)
                 )
-                btn.grid(row=r, column=c, sticky="nsew", padx=2, pady=2)
+                btn.pack(side="left", expand=True, fill="both", padx=2, pady=2)
 
-        # Responsive grid
-        for i in range(7):
-            btns_frame.rowconfigure(i, weight=1)
-            btns_frame.columnconfigure(i, weight=1)
-
-    def get_color(self, text: str) -> str:
-        """Assign colors based on button type."""
-        if text.isdigit() or text == '.':
-            return self.button_colors["numbers"]
-        elif text in "+-*/^%//":
-            return self.button_colors["operators"]
+    def get_button_color(self, text, cmap):
+        if text in "0123456789.":
+            return cmap["numbers"]
+        elif text in "+-*/^%":
+            return cmap["operators"]
         elif text in ['√', '!', 'sin', 'cos', 'tan', 'log', 'ln']:
-            return self.button_colors["scientific"]
+            return cmap["scientific"]
         elif text in ['M+', 'M-', 'MR']:
-            return self.button_colors["memory"]
+            return cmap["memory"]
         else:
-            return self.button_colors["others"]
+            return cmap["others"]
 
-    # ---------------- Button Actions ---------------- #
-    def on_click(self, char: str):
-        """Handle button clicks."""
+    def bind_keys(self):
+        self.root.bind("<Key>", self.on_keypress)
+        self.root.bind("<Return>", lambda e: self.calculate())
+        self.root.bind("<BackSpace>", lambda e: self.backspace())
+        self.root.bind("<Escape>", lambda e: self.clear_all())
+
+    # -------------------- BUTTON ACTIONS --------------------
+    def on_click(self, char):
         if char == 'C':
-            self.clear_entry()
+            self.backspace()
         elif char == 'AC':
             self.clear_all()
         elif char == '=':
             self.calculate()
         elif char == 'M+':
-            self.memory_add()
+            self.memory_action('add')
         elif char == 'M-':
-            self.memory_subtract()
+            self.memory_action('sub')
         elif char == 'MR':
-            self.memory_recall()
+            self.insert_memory()
         elif char == 'Export':
             self.export_history()
         else:
-            self.append_to_expression(char)
-
-    def on_keypress(self, event):
-        """Support keyboard input."""
-        key = event.char
-        if key in '0123456789.+-*/%^':
-            self.append_to_expression(key)
-        elif key == '\r':  # Enter
-            self.calculate()
-        elif key == '\x08':  # Backspace
-            self.expression = self.expression[:-1]
+            self.expression += str(char)
             self.update_entry(self.expression)
 
-    # ---------------- Expression Handling ---------------- #
-    def append_to_expression(self, value: str):
-        """Append characters to expression."""
-        self.expression += value
-        self.entry.insert(tk.END, value)
-
-    def clear_entry(self):
-        """Clear only the current entry."""
-        self.expression = ""
-        self.entry.delete(0, tk.END)
+    def backspace(self):
+        self.expression = self.expression[:-1]
+        self.update_entry(self.expression)
 
     def clear_all(self):
-        """Clear entry and history."""
-        self.clear_entry()
-        self.history = []
+        self.expression = ""
+        self.update_entry("")
+        self.history.clear()
         self.update_history_panel()
 
-    # ---------------- Memory Functions ---------------- #
-    def memory_add(self):
+    def memory_action(self, mode):
         try:
-            self.memory += float(self.entry.get())
+            val = float(self.entry.get())
+            self.memory += val if mode == 'add' else -val
         except ValueError:
-            pass
+            messagebox.showinfo("Memory", "Invalid number to store.")
 
-    def memory_subtract(self):
-        try:
-            self.memory -= float(self.entry.get())
-        except ValueError:
-            pass
+    def insert_memory(self):
+        self.expression += str(self.memory)
+        self.update_entry(self.expression)
 
-    def memory_recall(self):
-        self.append_to_expression(str(self.memory))
-
-    # ---------------- Calculation ---------------- #
+    # -------------------- CALCULATE --------------------
     def calculate(self):
         try:
-            expr = self.transform_expression(self.expression)
-            result = eval(expr, {"math": math})
-            self.update_entry(str(result))
+            expr = self.prepare_expression(self.expression)
+            result = eval(expr, {"__builtins__": None}, {"math": math})
             self.history.append(f"{self.expression} = {result}")
-            self.update_history_panel()
             self.expression = str(result)
+            self.update_entry(result)
+            self.update_history_panel()
         except Exception as e:
             messagebox.showerror("Error", f"Invalid Expression!\n{e}")
-            self.clear_entry()
+            self.expression = ""
+            self.update_entry("")
 
-    def transform_expression(self, expr: str) -> str:
-        """Replace symbols with valid Python math expressions."""
+    def prepare_expression(self, expr):
         expr = expr.replace('^', '**')
-        expr = expr.replace('√', 'math.sqrt(') + ')' * expr.count('√')
-        expr = self.replace_factorial(expr)
+        expr = expr.replace('√', 'math.sqrt')
         expr = expr.replace('sin', 'math.sin(math.radians')
         expr = expr.replace('cos', 'math.cos(math.radians')
         expr = expr.replace('tan', 'math.tan(math.radians')
         expr = expr.replace('log', 'math.log10')
         expr = expr.replace('ln', 'math.log')
+        expr = self.replace_factorial(expr)
         return expr
 
-    def replace_factorial(self, expr: str) -> str:
-        """Convert 'n!' into math.factorial(n)."""
+    def replace_factorial(self, expr):
         while '!' in expr:
             idx = expr.index('!')
             start = idx - 1
@@ -184,33 +151,42 @@ class PolishedScientificCalculator:
             expr = expr[:start + 1] + f"math.factorial(int({number}))" + expr[idx + 1:]
         return expr
 
-    # ---------------- History ---------------- #
+    # -------------------- HISTORY --------------------
+    def update_entry(self, value):
+        self.entry.delete(0, tk.END)
+        self.entry.insert(tk.END, str(value))
+
     def update_history_panel(self):
-        """Update history display."""
         self.history_panel.config(state='normal')
         self.history_panel.delete(1.0, tk.END)
-        self.history_panel.insert(tk.END, "\n".join(self.history[-20:]))
+        for item in self.history[-20:]:
+            self.history_panel.insert(tk.END, f"{item}\n")
+        self.history_panel.yview_moveto(1.0)
         self.history_panel.config(state='disabled')
 
     def export_history(self):
-        """Export calculation history to file."""
         if not self.history:
-            messagebox.showinfo("Export History", "No history to export.")
+            messagebox.showinfo("Export", "No history to export.")
             return
-        file = filedialog.asksaveasfilename(defaultextension=".txt", filetypes=[("Text files", "*.txt")])
+        file = filedialog.asksaveasfilename(
+            defaultextension=".txt", filetypes=[("Text Files", "*.txt")]
+        )
         if file:
             with open(file, "w") as f:
                 f.write("\n".join(self.history))
-            messagebox.showinfo("Export History", f"History exported to {file}")
+            messagebox.showinfo("Export", f"History saved to:\n{file}")
 
-    # ---------------- Helpers ---------------- #
-    def update_entry(self, value: str):
-        """Update entry field."""
-        self.entry.delete(0, tk.END)
-        self.entry.insert(0, value)
+    # -------------------- KEYBOARD --------------------
+    def on_keypress(self, event):
+        key = event.char
+        if key in "0123456789.+-*/%^":
+            self.expression += key
+            self.update_entry(self.expression)
+        elif key == '\r':
+            self.calculate()
 
-
+# -------------------- MAIN --------------------
 if __name__ == "__main__":
     root = tk.Tk()
-    polished_calc = PolishedScientificCalculator(root)
+    app = PolishedScientificCalculator(root)
     root.mainloop()
